@@ -90,6 +90,9 @@ resource "yandex_vpc_security_group" "LAN" {
 
 }
 
+
+# FW для web серверов
+
 resource "yandex_vpc_security_group" "web_fw" {
   name       = "web_fw"
   network_id = yandex_vpc_network.project_net.id
@@ -108,6 +111,50 @@ resource "yandex_vpc_security_group" "web_fw" {
     v4_cidr_blocks = ["0.0.0.0/0"]
   }
 
+
+}
+
+
+# FW для Prometheus
+
+resource "yandex_vpc_security_group" "prometheus" {
+  name       = "prometheus_vm"
+  network_id = yandex_vpc_network.project_net.id
+  ingress {
+    description    = "Allow 0.0.0.0/0"
+    protocol       = "TCP"
+    v4_cidr_blocks = ["0.0.0.0/0"]
+    port           = 9090
+  }
+  egress {
+    description    = "Permit ANY"
+    protocol       = "ANY"
+    v4_cidr_blocks = ["0.0.0.0/0"]
+    from_port      = 0
+    to_port        = 65535
+  }
+
+}
+
+
+# FW для Grafana
+
+resource "yandex_vpc_security_group" "grafana" {
+  name       = "grafana_vm"
+  network_id = yandex_vpc_network.project_net.id
+  ingress {
+    description    = "Allow 0.0.0.0/0"
+    protocol       = "TCP"
+    v4_cidr_blocks = ["0.0.0.0/0"]
+    port           = 9100
+  }
+  egress {
+    description    = "Permit ANY"
+    protocol       = "ANY"
+    v4_cidr_blocks = ["0.0.0.0/0"]
+    from_port      = 0
+    to_port        = 65535
+  }
 
 }
 

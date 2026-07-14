@@ -1,0 +1,27 @@
+- name: grafana
+  hosts: grafana_servers
+  become: true
+
+  tasks:
+    - name: install grafana
+      apt:
+        deb: https://github.com/grafana/grafana/releases/download/v13.1.0/grafana_13.1.0_28013217238_linux_amd64.deb
+    
+
+    - name: Restart grafana
+      service:
+        name: grafana-server
+        state: restarted
+    
+      
+
+    - name: start grafana
+      systemd:
+        state: started
+        name: grafana-server
+
+    - name: enable_grafana
+      systemd:
+        name: grafana-server
+        enabled: yes
+        masked: no

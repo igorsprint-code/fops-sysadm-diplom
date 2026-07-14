@@ -1,0 +1,6 @@
+- name: creating and configuring web servers
+  hosts: webservers
+  become: yes
+  
+  roles:
+    - nginx

@@ -1,0 +1,96 @@
+    - name: create_group
+      group:
+        name: node_exporter
+        state: present
+    
+    - name: add user
+      user:
+        name: node_exporter
+        groups: node_exporter
+        state: present   
+
+
+
+    - name: create dir for download NE 
+      file:
+        path: /tmp/node_exporter
+        state: directory
+        owner: user
+        group: user
+        mode: 0755
+
+    - name: create dir for NE 
+      file:
+        path: /usr/local/bin/node_exporter
+        state: directory
+        owner: user
+        group: user
+        mode: 0755
+
+        
+
+    - name: download NE 
+      ansible.builtin.unarchive:
+        src: https://github.com/prometheus/node_exporter/releases/download/v1.12.0/node_exporter-1.12.0.linux-amd64.tar.gz
+        dest: /tmp/node_exporter
+        remote_src: yes
+        creates: /tmp/node_exporter/node_exporter-1.12.0.linux-amd64
+
+    - name: copy NE 
+      copy:
+        src: /tmp/node_exporter/node_exporter-1.12.0.linux-amd64/node_exporter
+        dest: /usr/local/bin/node_exporter/
+        remote_src: yes
+
+    - name: chmod NE file
+      file:
+        dest: /usr/local/bin/node_exporter/
+        owner: node_exporter
+        group: node_exporter
+        mode: 0775
+        recurse: yes
+      notify: restart node exporter
+
+    - name: create  file for node-exporter.service
+      file:
+        path: "/etc/systemd/system/node-exporter.service"
+        owner: root
+        group: root
+        mode: 0777
+        state: touch
+
+
+    - name: create node-exporter.service
+      lineinfile:
+        dest: /etc/systemd/system/node-exporter.service
+        line: "{{ item }}"
+      with_items:
+        - "[Unit]"
+        - Description=Node Exporter Lesson 9.4
+        - After=network.target
+        - "[Service]"
+        - User=node_exporter
+        - Group=node_exporter
+        - Type=simple
+        - ExecStart=/usr/local/bin/node_exporter/node_exporter
+        - "[Install]"
+        - WantedBy=multi-user.target 
+      notify: daemon_reload
+
+
+    # - name: daemon_reload
+    #   systemd:
+    #     daemon_reload: yes    
+    
+    # - name: start node-exporter.service
+    #   systemd:
+    #     state: started
+    #     name: node-exporter
+    
+    - name: enable node-exporter.service
+      systemd:
+        name: node-exporter
+        enabled: yes
+        masked: no
+
+    

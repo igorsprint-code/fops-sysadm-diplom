@@ -1,0 +1,6 @@
+- name: configuring node exproter
+  hosts: webservers
+  become: yes
+  
+  roles:
+    - node_exporter

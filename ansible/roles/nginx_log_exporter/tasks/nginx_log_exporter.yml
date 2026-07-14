@@ -1,0 +1,21 @@
+- name: nginx_log_exporter
+  hosts: webservers
+  become: true
+
+  tasks:
+    - name: install nginx_log_exporter
+      apt:
+        deb: https://github.com/martin-helmich/prometheus-nginxlog-exporter/releases/download/v1.9.2/prometheus-nginxlog-exporter_1.9.2_linux_amd64.deb
+    
+
+   
+    - name: start nginxlog_exporter
+      systemd:
+        state: started
+        name: prometheus-nginxlog-exporter
+
+    - name: enable nginxlog_exporter
+      systemd:
+        name: prometheus-nginxlog-exporter
+        enabled: yes
+        masked: no

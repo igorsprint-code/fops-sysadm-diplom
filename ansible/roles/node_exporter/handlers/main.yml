@@ -1,0 +1,15 @@
+- name: restart node exporter
+  systemd:
+      state: started
+      name: node-exporter
+
+- name: daemon_reload
+  systemd:
+    daemon_reload: yes
+
+- name: enable node-exporter
+  systemd:
+    name: node-exporter
+    enabled: yes
+    masked: no
+    

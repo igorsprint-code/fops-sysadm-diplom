@@ -1,0 +1,144 @@
+    - name: create_group
+      group:
+        name: prometheus
+        state: present
+    
+    - name: add user
+      user:
+        name: prometheus
+        groups: prometheus
+        state: present
+
+    - name: create directory for prometheus archive
+      file:
+        path: /tmp/prometheus
+        state: directory
+        owner: user
+        group: user
+        mode: 0755
+
+    - name: download prometheus
+      ansible.builtin.unarchive:
+        src:  https://github.com/prometheus/prometheus/releases/download/v3.13.1/prometheus-3.13.1.linux-amd64.tar.gz 
+        dest: /tmp/prometheus
+        remote_src: yes
+        creates: /tmp/prometheus/prometheus-3.13.1.linux-amd64
+
+    - name: create "/etc/prometheus"
+      file:
+        path: /etc/prometheus
+        state: directory
+        owner: prometheus
+        group: prometheus
+        mode: 0775
+
+    - name: create "/var/lib/prometheus"
+      file:
+        path: /var/lib/prometheus
+        state: directory
+        owner: prometheus
+        group: prometheus
+        mode: 0775
+    
+    - name: copy prometheus to "/usr/local/bin"
+      copy:
+        src: /tmp/prometheus/prometheus-3.13.1.linux-amd64/prometheus
+        dest: /usr/local/bin
+        remote_src: yes
+
+    - name: copy promtool to "/usr/local/bin"
+      copy:
+        src: /tmp/prometheus/prometheus-3.13.1.linux-amd64/promtool
+        dest: /usr/local/bin
+        remote_src: yes
+
+    - name: copy "prometheus.yml" to /etc/prometheus
+      copy:
+        src: /tmp/prometheus/prometheus-3.13.1.linux-amd64/prometheus.yml
+        dest: /etc/prometheus
+        remote_src: yes
+      notify: restart prometheus
+
+    - name: chown dir "/etc/prometheus and /var/lib/prometheus"
+      command: chown -R prometheus:prometheus /etc/prometheus /var/lib/prometheus
+
+    - name: chown "/usr/local/bin/prometheus"
+      command: chown prometheus:prometheus /usr/local/bin/prometheus
+
+    - name: chown "/usr/local/bin/promtool"
+      command: chown prometheus:prometheus /usr/local/bin/promtool
+ 
+    - name: x prometheus
+      command: chmod +x /usr/local/bin/prometheus
+
+
+    - name: x promtool
+      command: chmod +x /usr/local/bin/promtool
+
+    - name: prometheus.service
+      file:
+        path: "/etc/systemd/system/prometheus.service"
+        owner: root
+        group: root
+        mode: 0775
+        state: touch
+
+    - name: config prometheus.service
+      lineinfile:
+        dest: /etc/systemd/system/prometheus.service
+        line: "{{ item }}"
+      with_items:
+        - "[Unit]"
+        - Description=Prometheus Service Netology Lesson 9.4
+        - After=network.target
+        - "[Service]"
+        - User=prometheus
+        - Group=prometheus
+        - Type=simple
+        - ExecStart=/usr/local/bin/prometheus \
+        - --config.file /etc/prometheus/prometheus.yml \
+        - --storage.tsdb.path /var/lib/prometheus/ \
+        - --web.console.templates=/etc/prometheus/consoles \
+        - --web.console.libraries=/etc/prometheus/console_libraries
+        - ExecReload=/bin/kill -HUP $MAINPID Restart=on-failure
+        - "[Install]"
+        - WantedBy=multi-user.target
+      notify: daemon_reload
+      
+
+
+    - name: Add nginx targets
+      template:
+        src: prometheus.yml.j2
+        dest: /etc/prometheus/prometheus.yml
+      notify: restart prometheus
+
+    # - name: Restart the Prometheus service
+    #   service:
+    #     name: prometheus
+    #     state: restarted
+      
+        
+ 
+
+
+    - name: daemon_reload
+      systemd:
+        daemon_reload: yes
+
+    - name: start prometheus.service
+      systemd:
+        state: started
+        name: prometheus
+
+    - name: enable_prometheus
+      systemd:
+        name: prometheus
+        enabled: yes
+        masked: no
+
+    
+      
+
+
+      
