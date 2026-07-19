@@ -1,0 +1,6 @@
+- name: filebeat
+  hosts: webservers
+  become: true
+
+  roles:
+    - filebeat

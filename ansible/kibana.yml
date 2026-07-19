@@ -1,0 +1,6 @@
+- name: kibana
+  hosts: kibana_server
+  become: true
+
+  roles:
+    - kibana

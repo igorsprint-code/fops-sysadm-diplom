@@ -1,0 +1,31 @@
+- name: install filebeat
+  hosts: webservers
+  become: true
+
+  tasks:
+    - name: download and install
+      apt:
+        deb: https://mirror.yandex.ru/mirrors/elastic/8/pool/main/f/filebeat/filebeat-8.12.2-amd64.deb
+        state: present
+
+    - name: enable filebeat
+      systemd:
+        name: filebeat.service
+        enabled: yes
+
+    - name: start filebeat
+      systemd:
+        name: filebeat.service
+        state: started
+
+    - name: config filebeat
+      copy:
+        src: ./filebeats/filebeat.yml
+        dest: /etc/filebeat/filebeat.yml
+
+    
+    
+    - name: restart filebeat
+      systemd:
+        name: filebeat.service
+        state: restarted

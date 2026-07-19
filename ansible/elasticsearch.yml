@@ -1,0 +1,6 @@
+- name: elasticsearch
+  hosts: elasticsearch_server
+  become: true
+
+  roles:
+    - elasticsearch

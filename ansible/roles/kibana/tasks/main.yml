@@ -1,0 +1,36 @@
+- name: kibana
+  hosts: kibana_server
+  become: true
+
+  tasks:
+    - name: install kibana
+      apt:
+        deb: https://mirror.yandex.ru/mirrors/elastic/8/pool/main/k/kibana/kibana-8.12.2-amd64.deb
+        state: present
+
+    - name: enable kibana
+      systemd:
+        name: kibana.service
+        enabled: true
+
+
+    - name: start kibana
+      systemd:
+        name: kibana.service
+        state: started
+
+    
+    - name: config kibana
+      copy:
+        src: ./kibana/kibana.yml
+        dest: /etc/kibana/kibana.yml
+        
+
+    - name: restart kibana
+      systemd:
+        name: kibana.service
+        state: restarted
+        
+
+    
+    

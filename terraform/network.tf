@@ -122,9 +122,10 @@ resource "yandex_vpc_security_group" "prometheus" {
   network_id = yandex_vpc_network.project_net.id
   ingress {
     description    = "Allow 0.0.0.0/0"
-    protocol       = "TCP"
+    protocol       = "ANY"
     v4_cidr_blocks = ["0.0.0.0/0"]
-    port           = 9090
+    from_port      = 0
+    to_port        = 65535
   }
   egress {
     description    = "Permit ANY"
@@ -146,7 +147,7 @@ resource "yandex_vpc_security_group" "grafana" {
     description    = "Allow 0.0.0.0/0"
     protocol       = "TCP"
     v4_cidr_blocks = ["0.0.0.0/0"]
-    port           = 9100
+    port           = 3000
   }
   egress {
     description    = "Permit ANY"

@@ -1,0 +1,6 @@
+- name: configuring log exproter
+  hosts: webservers
+  become: yes
+  
+  roles:
+    - nginx_log_exporter
